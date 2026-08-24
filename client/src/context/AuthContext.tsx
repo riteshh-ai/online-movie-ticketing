@@ -6,7 +6,7 @@ import { AdminAuth, Auth } from "../api";
 // load from GET /api/auth/me and GET /api/admin/auth/me — the actual
 // session lives server-side in the httpOnly JWT cookie, not here.
 export type Customer = { id: number; fullName: string; email: string };
-export type Admin = { id: number; role: "SUPER_ADMIN" | "CINEMA_ADMIN"; cinemaId: number | null };
+export type Admin = { id: number; role: "SUPER_ADMIN" | "CINEMA_ADMIN"; cinemaId: number | null; cinemaName?: string | null };
 
 type AuthState = {
   customer: Customer | null;

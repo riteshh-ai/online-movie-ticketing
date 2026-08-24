@@ -5,12 +5,12 @@ import { ApiError, Bookings, Payments, Shows } from "../api";
 
 type Show = Awaited<ReturnType<typeof Shows.get>>;
 
-// Replaces legacy/booking.php's seat picker UI + POST handler. The 4x10
-// "R{row}S{seat}" seat grid is generated client-side same as legacy, but now
-// checked against GET /api/shows/:showId/seats instead of no server-side
-// conflict check at all — see server/src/routes/shows.routes.ts. total_amount
-// is always computed server-side from show.ticketPrice, never trusted from
-// the client (see migration.md fix #12).
+// Ported from legacy/booking.php's seat picker UI + POST handler: a
+// checkbox-style seat grid under a "SCREEN" bar, then a payment-method
+// choice. The 4x10 "R{row}S{seat}" seat grid is generated client-side same
+// as legacy, but now checked against GET /api/shows/:showId/seats instead
+// of no server-side conflict check at all. total_amount is always computed
+// server-side from show.ticketPrice, never trusted from the client.
 export function BookingPage() {
   const { showId } = useParams();
   const navigate = useNavigate();
@@ -55,7 +55,6 @@ export function BookingPage() {
       setBooking(created);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not create booking.");
-      // Someone may have grabbed a seat while we waited — refresh the map.
       const seats = await Shows.seats(show.id);
       setTaken(new Set(seats.takenSeatIds));
       setSelected(new Set());
@@ -87,24 +86,25 @@ export function BookingPage() {
     }
   }
 
-  if (loading) return <p className="empty">Loading…</p>;
-  if (!show) return <p className="empty">Show not found.</p>;
+  if (loading) return <div className="container"><p className="empty">Loading…</p></div>;
+  if (!show) return <div className="container"><p className="empty">Show not found.</p></div>;
 
   const total = Number(show.ticketPrice) * selected.size;
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto" }}>
-      <h1>{show.movieName}</h1>
-      <p style={{ color: "var(--text-tertiary)" }}>
-        {show.cinemaName} · {show.showDate} · {show.showTimeLabel} · Rs. {show.ticketPrice}/seat
+    <div className="container" style={{ maxWidth: 720 }}>
+      <h2 className="section-heading">Book Your Ticket Now</h2>
+      <p style={{ textAlign: "center", color: "var(--text-muted)" }}>
+        <b>{show.movieName}</b> — {show.cinemaName} · {show.showDate} · {show.showTimeLabel} · Rs. {show.ticketPrice}/seat
       </p>
 
       {error && <div className="form-error">{error}</div>}
 
       {!booking ? (
         <>
-          <div className="card" style={{ marginBottom: "1.5rem" }}>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
+          <div style={{ margin: "1.5rem 0" }}>
+            <div className="screen-bar">SCREEN</div>
+            <div style={{ display: "flex", justifyContent: "center" }}>
               <div className="seat-grid">
                 {Array.from({ length: SEAT_ROWS }, (_, r) => r + 1).map((row) => (
                   <div className="seat-row" key={row}>
@@ -127,40 +127,40 @@ export function BookingPage() {
                 ))}
               </div>
             </div>
-            <p style={{ textAlign: "center", color: "var(--text-tertiary)", fontSize: 13 }}>
-              {allSeatIds().length - taken.size} of {allSeatIds().length} seats available · gray = taken, cyan = selected
+            <p style={{ textAlign: "center", color: "var(--text-muted)", fontSize: 13, marginTop: "0.75rem" }}>
+              {allSeatIds().length - taken.size} of {allSeatIds().length} seats available · grey = taken, darkcyan = selected
             </p>
           </div>
 
           <div className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div>{selected.size} seat(s) selected</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)" }}>Rs. {total}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "var(--color-primary)" }}>Rs. {total}</div>
             </div>
             <button className="btn" disabled={selected.size === 0 || submitting} onClick={handleConfirm}>
-              {submitting ? "Booking…" : "Confirm Seats"}
+              {submitting ? "Booking…" : "Confirm Booking"}
             </button>
           </div>
         </>
       ) : (
-        <div className="card">
-          <h2>Choose a payment method</h2>
+        <div className="card" style={{ maxWidth: 480, margin: "0 auto" }}>
+          <h2 style={{ color: "var(--color-primary)" }}>Select Payment Method</h2>
           <p>
             Booking #{booking.id} · {booking.seatNumbers} · Total Rs. {booking.totalAmount}
           </p>
 
           {!esewa ? (
             <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
-              <button className="btn" onClick={handleEsewaStart}>
-                Pay with eSewa
+              <button className="btn" style={{ flex: 1, background: "#2ecc71" }} onClick={handleEsewaStart}>
+                <i className="fa fa-mobile" /> Pay with eSewa
               </button>
-              <button className="btn btn-secondary" onClick={handleCounter}>
-                Pay at Counter
+              <button className="btn" style={{ flex: 1, background: "#3498db" }} onClick={handleCounter}>
+                <i className="fa fa-money" /> Pay at Counter
               </button>
             </div>
           ) : (
             <div style={{ marginTop: "1rem" }}>
-              <p style={{ color: "var(--text-tertiary)" }}>
+              <p style={{ color: "var(--text-muted)" }}>
                 eSewa test gateway is simulate-only in this build — choose an outcome below.
               </p>
               <div style={{ display: "flex", gap: "0.75rem" }}>

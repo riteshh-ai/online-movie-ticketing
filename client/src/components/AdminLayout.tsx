@@ -17,10 +17,10 @@ const links: Array<[string, string]> = [
   ["/admin/admins", "Admins"],
 ];
 
-// Replaces legacy/Admin/admin_sidenavbar.php + admin_header.php + admin_footer.php.
-// Which links are USEFUL vs. what the SERVER actually allows are two different
-// things — every /api/admin/* route re-checks role server-side regardless of
-// what's shown here (see server/src/middleware/auth.ts).
+// Ported from legacy/Admin/admin_header.php (black top navbar, "Admin Panel
+// - {cinema}" branding) + admin_sidenavbar.php (black sidebar, maroon hover
+// accent). Which links show is a UX nicety only — the SERVER re-checks
+// role on every /api/admin/* route regardless (see server/src/middleware/auth.ts).
 export function AdminLayout() {
   const { admin, setAdmin } = useAuth();
 
@@ -31,30 +31,29 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="admin-shell">
-      <aside className="admin-sidebar">
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <nav className="admin-topnav">
         <Link to="/admin" className="brand">
-          MyCine<span>Zone</span>
+          <img src="/logo.jpeg" alt="" />
+          Admin Panel{admin?.cinemaName ? ` - ${admin.cinemaName}` : ""}
         </Link>
-        <nav>
-          {links.map(([to, label]) => (
-            <NavLink key={to} to={to} end={to === "/admin"} className={({ isActive }) => (isActive ? "active" : "")}>
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
-      <div className="admin-main">
-        <div className="admin-topbar">
-          <div>
-            {admin?.role === "SUPER_ADMIN" ? "Super Admin" : "Cinema Admin"}
-            {admin?.cinemaId ? ` · Cinema #${admin.cinemaId}` : ""}
-          </div>
-          <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
-            Log out
-          </button>
+        <button className="btn btn-secondary btn-sm" style={{ color: "#fff", borderColor: "#fff" }} onClick={handleLogout}>
+          Logout
+        </button>
+      </nav>
+      <div className="admin-shell">
+        <aside className="admin-sidebar">
+          <nav>
+            {links.map(([to, label]) => (
+              <NavLink key={to} to={to} end={to === "/admin"} className={({ isActive }) => (isActive ? "active" : "")}>
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+        </aside>
+        <div className="admin-main">
+          <Outlet />
         </div>
-        <Outlet />
       </div>
     </div>
   );

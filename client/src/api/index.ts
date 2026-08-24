@@ -38,6 +38,10 @@ export const Cinemas = {
   list: () => apiFetch<CinemaDto[]>("/cinemas"),
 };
 
+export const Sliders = {
+  list: () => apiFetch<SliderDto[]>("/sliders"),
+};
+
 export const Auth = {
   me: () => apiFetch<{ id: number; fullName: string; email: string; phone: string | null; gender: string | null }>("/auth/me"),
   login: (email: string, password: string) =>

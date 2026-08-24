@@ -1,62 +1,67 @@
-import type { MovieDto } from "@mycinezone/shared";
-import { useEffect, useState, type FormEvent } from "react";
-import { Movies } from "../api";
+import type { MovieDto, SliderDto } from "@mycinezone/shared";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Movies, Sliders } from "../api";
+import { Carousel } from "../components/Carousel";
 import { MovieGrid } from "../components/MovieGrid";
 
-// Replaces legacy/index.php — slider, search, now-showing + coming-soon grids.
+// Ported from legacy/index.php — slider carousel, search results, now-showing
+// + coming-soon grids. Search now lives in the navbar (Layout.tsx) instead
+// of a page-body form, and results replace the two grids via ?q=.
 export function HomePage() {
+  const [params] = useSearchParams();
+  const q = params.get("q")?.trim() ?? "";
+
+  const [sliders, setSliders] = useState<SliderDto[]>([]);
   const [nowShowing, setNowShowing] = useState<MovieDto[]>([]);
   const [comingSoon, setComingSoon] = useState<MovieDto[]>([]);
-  const [query, setQuery] = useState("");
   const [results, setResults] = useState<MovieDto[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([Movies.nowShowing(), Movies.comingSoon()])
-      .then(([now, soon]) => {
-        setNowShowing(now);
-        setComingSoon(soon);
-      })
-      .finally(() => setLoading(false));
+    Sliders.list().then(setSliders);
   }, []);
 
-  async function handleSearch(e: FormEvent) {
-    e.preventDefault();
-    if (!query.trim()) {
+  useEffect(() => {
+    setLoading(true);
+    if (q) {
+      Movies.list(q)
+        .then(setResults)
+        .finally(() => setLoading(false));
+    } else {
       setResults(null);
-      return;
+      Promise.all([Movies.nowShowing(), Movies.comingSoon()])
+        .then(([now, soon]) => {
+          setNowShowing(now);
+          setComingSoon(soon);
+        })
+        .finally(() => setLoading(false));
     }
-    setResults(await Movies.list(query.trim()));
-  }
+  }, [q]);
 
   return (
     <>
-      <section className="hero">
-        <h1>Book your next movie night</h1>
-        <p>Browse now-showing and coming-soon movies, pick your seats, and pay at the counter or with eSewa.</p>
-        <form className="search-box" onSubmit={handleSearch}>
-          <input placeholder="Search movies…" value={query} onChange={(e) => setQuery(e.target.value)} />
-          <button className="btn" type="submit">
-            Search
-          </button>
-        </form>
-      </section>
+      {!q && <Carousel images={sliders} />}
 
-      {loading ? (
-        <p className="empty">Loading…</p>
-      ) : results ? (
-        <>
-          <h2>Search results for &ldquo;{query}&rdquo;</h2>
-          <MovieGrid movies={results} />
-        </>
-      ) : (
-        <>
-          <h2>Now Showing</h2>
-          <MovieGrid movies={nowShowing} />
-          <h2 style={{ marginTop: "2.5rem" }}>Coming Soon</h2>
-          <MovieGrid movies={comingSoon} />
-        </>
-      )}
+      <div className="container" style={{ paddingTop: "2.5rem" }}>
+        {loading ? (
+          <p className="empty">Loading…</p>
+        ) : results ? (
+          <>
+            <h2 className="section-heading">Search Results for &ldquo;{q}&rdquo;</h2>
+            <MovieGrid movies={results} />
+          </>
+        ) : (
+          <>
+            <h2 className="section-heading">Now Showing</h2>
+            <MovieGrid movies={nowShowing} />
+            <h2 className="section-heading" style={{ marginTop: "3rem" }}>
+              Coming Soon
+            </h2>
+            <MovieGrid movies={comingSoon} />
+          </>
+        )}
+      </div>
     </>
   );
 }

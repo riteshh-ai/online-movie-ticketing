@@ -14,9 +14,9 @@ export function ComingSoonPage() {
   }, []);
 
   return (
-    <>
-      <h1>Coming Soon</h1>
+    <div className="container">
+      <h2 className="section-heading">Coming Soon</h2>
       {loading ? <p className="empty">Loading…</p> : <MovieGrid movies={movies} />}
-    </>
+    </div>
   );
 }

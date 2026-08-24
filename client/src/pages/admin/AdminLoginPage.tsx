@@ -30,24 +30,28 @@ export function AdminLoginPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page" style={{ background: "var(--bg-page-alt)" }}>
       <div className="container">
-        <div className="form-narrow" style={{ margin: "3rem auto 0" }}>
-          <h1>Admin Login</h1>
-          {error && <div className="form-error">{error}</div>}
-          <form onSubmit={handleSubmit}>
-            <div className="field">
-              <label htmlFor="email">Email</label>
-              <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div className="field">
-              <label htmlFor="password">Password</label>
-              <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
-            <button className="btn" disabled={submitting}>
-              {submitting ? "Logging in…" : "Log in"}
-            </button>
-          </form>
+        <div className="auth-card" style={{ marginTop: "4rem" }}>
+          <div className="auth-card-header" style={{ background: "#000" }}>
+            <h1>Admin Login</h1>
+          </div>
+          <div className="auth-card-body">
+            {error && <div className="form-error">{error}</div>}
+            <form onSubmit={handleSubmit}>
+              <div className="field">
+                <label htmlFor="email">Email</label>
+                <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className="field">
+                <label htmlFor="password">Password</label>
+                <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+              </div>
+              <button className="btn" disabled={submitting} style={{ width: "100%" }}>
+                {submitting ? "Logging in…" : "Log in"}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

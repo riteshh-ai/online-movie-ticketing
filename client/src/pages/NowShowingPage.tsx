@@ -14,9 +14,9 @@ export function NowShowingPage() {
   }, []);
 
   return (
-    <>
-      <h1>Now Showing</h1>
+    <div className="container">
+      <h2 className="section-heading">Now Showing</h2>
       {loading ? <p className="empty">Loading…</p> : <MovieGrid movies={movies} />}
-    </>
+    </div>
   );
 }

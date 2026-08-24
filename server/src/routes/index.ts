@@ -8,6 +8,7 @@ import { feedbackRouter } from "./feedback.routes.js";
 import { moviesRouter } from "./movies.routes.js";
 import { paymentsRouter } from "./payments.routes.js";
 import { showsRouter } from "./shows.routes.js";
+import { slidersRouter } from "./sliders.routes.js";
 
 export const apiRouter = Router();
 
@@ -17,6 +18,7 @@ apiRouter.use("/auth", authRouter);
 apiRouter.use("/movies", moviesRouter);
 apiRouter.use("/shows", showsRouter);
 apiRouter.use("/cinemas", cinemasRouter);
+apiRouter.use("/sliders", slidersRouter);
 apiRouter.use("/bookings", bookingsRouter);
 apiRouter.use("/payments", paymentsRouter);
 apiRouter.use("/contact", contactRouter);
