@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" translate="no" class="notranslate">
+  <head>
+    <!-- Google tag -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-F11ZDN36D2"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-F11ZDN36D2');
+    </script>
+
+    <meta name="google" content="notranslate" />
+    <meta charset="utf-8" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="/Qfx-favicon.svg" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <meta name="theme-color" content="#000000" />
+    <meta name="Home" content="Home" />
+
+    <!-- Apple icon -->
+    <link rel="apple-touch-icon" href="/Qfx-favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="Home | QFX Cinemas" />
+    <meta property="og:title" content="Home | QFX Cinemas" />
+    <meta property="og:description" content="QFX Cinemas" />
+    <meta property="og:image" content="/Qfx-favicon.svg" />
+    <meta property="og:type" content="website" />
+
+    <!-- Web manifest (Vite loads from public/) -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <title>Home</title>
+
+    <style>
+      .spin {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+      }
+      .spin-container {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #17161d;
+        z-index: 10000;
+        padding: 15px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+
+    <!-- VITE ENTRY SCRIPT -->
+    <script type="module" crossorigin src="/assets/index-CtHffGNm.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-z11ZdvUb.css">
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <div id="root"></div>
+
+    <div id="main-spinner" class="spin-container">
+      <div class="spin"></div>
+    </div>
+
+    <div id="toast-container"></div>
+  <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a304d6f1188d7674',t:'MTc4NzYwMDU0MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
