@@ -40,6 +40,9 @@ export type MovieDto = {
   genre: string | null;
   industry: string | null;
   language: string | null;
+  genreId: number | null;
+  industryId: number | null;
+  languageId: number | null;
 };
 
 export type ShowDto = {
@@ -56,6 +59,10 @@ export type ShowDto = {
 export type BookingDto = {
   id: number;
   showId: number;
+  movieName?: string;
+  cinemaName?: string;
+  showDate?: string;
+  showTimeLabel?: string;
   ticketCount: number;
   seatNumbers: string;
   totalAmount: string;
@@ -63,3 +70,14 @@ export type BookingDto = {
   paymentMethod: PaymentMethod;
   bookingDate: string;
 };
+
+export type CinemaDto = { id: number; name: string; location: string; city: string };
+export type LookupDto = { id: number; name: string };
+export type ShowTimeDto = { id: number; label: string };
+export type ContactDto = { id: number; name: string; email: string; phone: string | null; message: string; createdAt: string };
+export type FeedbackDto = { id: number; name: string; email: string | null; phone: string | null; message: string; rating: number; createdAt: string };
+export type SliderDto = { id: number; imageUrl: string; altText: string | null };
+export type AdminUserDto = { id: number; username: string; email: string; role: AdminRole; cinemaId: number | null; cinemaName?: string | null };
+export type SeatMapDto = { seatIds: string[]; takenSeatIds: string[] };
+export type CustomerDto = { id: number; fullName: string; email: string; phone: string | null; gender: string | null; createdAt: string };
+export type DashboardStatsDto = { movieCount: number; cinemaCount: number; showCount: number; bookingCount: number; customerCount: number; revenue: string };

@@ -8,7 +8,8 @@ import { useAuth } from "../context/AuthContext";
  * PROJECT_REFERENCE.md §10.6 on why legacy's sidebar-only hiding wasn't
  * sufficient). */
 export function RequireAdmin({ children }: { children: ReactNode }) {
-  const { admin } = useAuth();
+  const { admin, ready } = useAuth();
+  if (!ready) return null;
   if (!admin) return <Navigate to="/admin/login" replace />;
   return <>{children}</>;
 }
