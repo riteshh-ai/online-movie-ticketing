@@ -1,0 +1,26 @@
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.env
+.env.local
+*.local
+
+# logs
+npm-debug.log*
+*.log
+
+# editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# uploads (runtime, not source)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# original source archive — kept for reference, not needed once legacy/ is committed
+reference_project.zip

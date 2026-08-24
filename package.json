@@ -1,0 +1,19 @@
+{
+  "name": "mycinezone",
+  "private": true,
+  "description": "MyCineZone — movie ticket booking app, migrated from PHP/MySQL to Node/Express + React",
+  "workspaces": [
+    "server",
+    "client",
+    "shared",
+    "scripts/migrate-data"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=server & npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "dev:client": "npm run dev --workspace=client",
+    "build": "npm run build --workspace=shared && npm run build --workspace=server && npm run build --workspace=client",
+    "lint": "npm run lint --workspace=server && npm run lint --workspace=client",
+    "test": "npm run test --workspace=server"
+  }
+}

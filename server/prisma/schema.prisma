@@ -1,0 +1,191 @@
+// Cleaned-up schema for MyCineZone, derived from the reverse-engineered
+// legacy schema in legacy/PROJECT_REFERENCE.md §5. Deliberate fixes vs. the
+// legacy schema are called out inline — see migration.md "Database" for the
+// full rationale of each one.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Genre {
+  id     Int     @id @default(autoincrement())
+  name   String  @db.VarChar(100)
+  movies Movie[]
+}
+
+model Industry {
+  id     Int     @id @default(autoincrement())
+  name   String  @db.VarChar(100)
+  movies Movie[]
+}
+
+model Language {
+  id     Int     @id @default(autoincrement())
+  name   String  @db.VarChar(100)
+  movies Movie[]
+}
+
+model Cinema {
+  id       Int         @id @default(autoincrement())
+  name     String      @db.VarChar(150)
+  location String
+  city     String      @db.VarChar(100)
+  shows    Show[]
+  admins   AdminUser[]
+}
+
+model ShowTime {
+  id    Int    @id @default(autoincrement())
+  label String @db.VarChar(50) // free-text, e.g. "7:00 PM" — kept as-is, not worth a real TIME column
+  shows Show[]
+}
+
+model Movie {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String?   @db.Text
+  posterPath    String?   // portrait poster (legacy: movie.movie_banner, under Images/)
+  landscapePath String?   // wide banner (legacy: movie.landscape_img, under Images/landscape/)
+  releaseDate   DateTime? @db.Date
+  duration      String?   // free text, e.g. "2h 15m" — structured minutes would be nicer but isn't load-bearing
+  director      String?
+  cast          String?   @db.VarChar(500) // comma-separated, same shape as legacy
+  ageRating     String?   @db.VarChar(10)
+  genreId       Int?
+  industryId    Int?
+  languageId    Int?
+  genre         Genre?    @relation(fields: [genreId], references: [id])
+  industry      Industry? @relation(fields: [industryId], references: [id])
+  language      Language? @relation(fields: [languageId], references: [id])
+  shows         Show[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([releaseDate]) // now-showing / coming-soon queries filter on this
+}
+
+model Show {
+  id           Int               @id @default(autoincrement())
+  movieId      Int
+  cinemaId     Int
+  showTimeId   Int
+  showDate     DateTime          @db.Date
+  seatCapacity Int // legacy show.no_seat — now actually enforced, see Booking service notes in migration.md
+  ticketPrice  Decimal           @db.Decimal(10, 2)
+  movie        Movie             @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  cinema       Cinema            @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  showTime     ShowTime          @relation(fields: [showTimeId], references: [id])
+  seats        SeatReservation[]
+  bookings     Booking[]
+
+  @@index([cinemaId])
+  @@index([movieId])
+}
+
+model Customer {
+  id           Int               @id @default(autoincrement())
+  fullName     String
+  email        String            @unique // login identifier
+  phone        String?
+  gender       String?
+  passwordHash String // bcrypt hash — legacy stored plaintext, see migration.md "Auth"
+  bookings     Booking[]
+  seats        SeatReservation[]
+  createdAt    DateTime          @default(now())
+}
+
+// One row per individual seat. A unique (showId, seatNumber) constraint
+// closes the legacy double-booking gap (PROJECT_REFERENCE.md §9/§10.10),
+// where nothing checked whether a seat was already taken before inserting.
+model SeatReservation {
+  id         Int      @id @default(autoincrement())
+  showId     Int
+  customerId Int
+  seatNumber String   @db.VarChar(20) // e.g. "R1S1" — same client-generated grid as legacy
+  show       Show     @relation(fields: [showId], references: [id], onDelete: Cascade)
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([showId, seatNumber])
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentMethod {
+  COUNTER
+  ESEWA
+}
+
+model Booking {
+  id            Int           @id @default(autoincrement())
+  customerId    Int
+  showId        Int
+  ticketCount   Int
+  seatNumbers   String        @db.VarChar(255) // comma-separated display snapshot; SeatReservation rows are the source of truth
+  totalAmount   Decimal       @db.Decimal(10, 2) // always derived server-side from show.ticketPrice — legacy had a hardcoded 250/ticket fallback that could drift from the real price, see migration.md
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod @default(COUNTER)
+  transactionId String?
+  paymentDate   DateTime?
+  bookingDate   DateTime      @default(now())
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  show          Show          @relation(fields: [showId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([showId])
+}
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String?
+  phone     String?
+  message   String   @db.Text
+  rating    Int // 1-5 — legacy sent free-text strings '1'/'3'/'4'/'5' (no '2'); normalized to a real int here
+  createdAt DateTime @default(now())
+}
+
+model Slider {
+  id       Int     @id @default(autoincrement())
+  imageUrl String
+  altText  String?
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  CINEMA_ADMIN
+}
+
+// Replaces legacy's two-tier admin model (a hardcoded super-admin credential
+// literally checked in Admin/index.php, plus real admin_users rows for
+// cinema-scoped admins). Every admin is now a real row; cinemaId null means
+// "no restriction" (super-admin), matching the old admin_cinema_id == 0
+// sentinel but without the hardcoded credential. See migration.md "Auth".
+model AdminUser {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(CINEMA_ADMIN)
+  cinemaId     Int?
+  cinema       Cinema?   @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+}

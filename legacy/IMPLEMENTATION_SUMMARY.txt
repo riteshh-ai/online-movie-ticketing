@@ -1,0 +1,154 @@
+# eSEWA Payment Integration - Implementation Summary
+
+## ✅ What Has Been Implemented
+
+### Files Created (4 new files):
+1. **esewa_payment.php** - Handles eSewa payment requests and redirects to eSewa gateway
+2. **payment_success.php** - Handles successful eSewa payments
+3. **payment_failure.php** - Handles failed eSewa payments
+4. **payment_counter.php** - Handles counter payment option
+
+### Files Modified (1 file):
+1. **booking.php** - Added payment options modal showing two choices:
+   - Pay with eSewa
+   - Pay at Counter
+
+### Configuration Files Created (2 files):
+1. **esewa_config.php** - Central configuration for eSewa credentials
+2. **ESEWA_INTEGRATION_GUIDE.md** - Complete integration documentation
+3. **DATABASE_UPDATES.sql** - SQL schema updates
+
+## 🔑 Test Credentials Provided
+
+```
+eSewa ID: 9806800001 (or 2, 3, 4, 5)
+Password: Nepal@123
+MPIN: 1122
+Merchant Code: EPAYTEST
+Token: 123456
+Secret Key: 8gBm/:&EnhH.1/q
+```
+
+## 🗄️ Database Changes Required
+
+Run these SQL queries:
+
+```sql
+ALTER TABLE booking ADD COLUMN payment_status VARCHAR(50) DEFAULT 'pending' AFTER total_amnt;
+ALTER TABLE booking ADD COLUMN payment_method VARCHAR(50) DEFAULT 'counter' AFTER payment_status;
+ALTER TABLE booking ADD COLUMN transaction_id VARCHAR(255) DEFAULT NULL AFTER payment_method;
+ALTER TABLE booking ADD COLUMN payment_date DATETIME DEFAULT NULL AFTER transaction_id;
+```
+
+Complete SQL file: `DATABASE_UPDATES.sql`
+
+## 🔄 Payment Flow
+
+### eSewa Payment Path:
+```
+User selects seats → Click "Confirm Booking" → 
+Payment Modal appears → Click "Pay with eSewa" → 
+Redirected to eSewa → User logs in & pays → 
+Redirected back to payment_success.php → 
+Database updated → Confirmation displayed
+```
+
+### Counter Payment Path:
+```
+User selects seats → Click "Confirm Booking" → 
+Payment Modal appears → Click "Pay at Counter" → 
+Redirected to payment_counter.php → 
+Instructions displayed → User goes to counter
+```
+
+## 📝 How to Setup
+
+### Step 1: Update Database
+Run the SQL queries from `DATABASE_UPDATES.sql` in your database
+
+### Step 2: No Additional Dependencies
+All files use existing code structure and Bootstrap/jQuery already in your project
+
+### Step 3: Test the Integration
+1. Go to booking.php
+2. Select seats and show
+3. Click "Confirm Booking"
+4. Modal will appear with 2 payment options
+5. Click "Pay with eSewa"
+6. Use test credentials to complete payment
+
+### Step 4: Verify in Database
+Check if payment_status and payment_method columns are populated correctly
+
+## 🚀 Future Enhancements (Optional)
+
+1. **Email Notifications**
+   - Send confirmation emails after payment
+   - Send payment receipts
+   - Send cancellation notices
+
+2. **Admin Dashboard**
+   - View all pending counter payments
+   - Mark counter payments as collected
+   - View eSewa transaction reports
+
+3. **Advanced Features**
+   - Refund processing
+   - Multiple payment methods (Khalti, ConnectIPS, etc.)
+   - Seat cancellation with refund
+   - Payment receipt generation
+
+## 🧪 Testing Checklist
+
+- [ ] Run SQL queries in database
+- [ ] Test eSewa payment with test credentials
+- [ ] Verify success page displays correctly
+- [ ] Check database entries are created/updated
+- [ ] Test counter payment option
+- [ ] Verify counter payment page displays correctly
+- [ ] Test failed payment scenario
+
+## ⚠️ Important Notes
+
+1. **Test Mode**: System is in TEST mode. Update to production credentials when ready.
+2. **HTTPS**: Use HTTP for testing, HTTPS required for production.
+3. **Seat Reservation**: Seats are reserved immediately. Consider timeout for pending payments.
+4. **Transaction Logging**: All transactions are logged in the booking table.
+
+## 📞 Support
+
+Refer to `ESEWA_INTEGRATION_GUIDE.md` for detailed documentation and troubleshooting.
+
+## 📊 Database Schema After Update
+
+### Updated booking table structure:
+```
+id (int) - Primary Key
+cust_id (int) - Customer ID
+show_id (int) - Show ID
+no_ticket (int) - Number of Tickets
+seat_dt_id (int) - Seat Detail ID
+booking_date (date) - Booking Date
+total_amnt (decimal) - Total Amount
+payment_status (varchar) - 'pending', 'completed', 'failed'  ← NEW
+payment_method (varchar) - 'esewa', 'counter'  ← NEW
+transaction_id (varchar) - eSewa Transaction ID  ← NEW (optional)
+payment_date (datetime) - When payment was made  ← NEW (optional)
+```
+
+## ✨ Ready to Go!
+
+All files are created and configured. You just need to:
+1. Run the database SQL updates
+2. Test the payment flow
+3. Update credentials when going to production
+
+---
+
+### 🎛️ New Admin Functionality
+• **Database:** create `admin_users` table (see README).  Added an `email` column used for login; keep `username` as a display name.  
+• **Super‑admin:** existing `admin@gmail.com/admin1234` retains full access.  
+• **Cinema admins:** create records (or use the new **Admins** pages) and assign to cinemas such as Cinebliss, Cinema Grand, etc.; each record now includes an email address.  
+• **Interface changes:** login now uses email/password, admin listing shows email column, add/edit forms collect email.  Bookings and show lists remain filtered to the assigned cinema.  
+• **New pages:** `viewadmin.php`, `addadmin.php`, `editadmin.php`, `deleteadmin.php` with sidebar link.
+
